@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div v-if="canEdit" class="d-flex align-center mb-4 gap-1em">
+    <div v-if="canEdit" class="row items-center q-mb-md q-gutter-sm">
       <template v-if="!!$slots.create">
         <slot name="create" />
       </template>
@@ -42,26 +42,25 @@
           :destroy="!quickListsIsMobile"
           title="Settings"
       >
-        <div class="d-flex align-center flex-wrap">
-          <v-select
+        <div class="row items-center wrap">
+          <q-select
               style="width: 250px"
-              :items="[
-              { text: 'Table', value: 'table' },
-              { text: 'Grid', value: 'grid' },
-              { text: 'Map', value: 'map' },
-              { text: 'Calendar', value: 'calendar' },
+              :options="[
+              { label: 'Table', value: 'table' },
+              { label: 'Grid', value: 'grid' },
+              { label: 'Map', value: 'map' },
+              { label: 'Calendar', value: 'calendar' },
             ]"
               v-model="activeTab"
-              variant="outlined"
               label="View As"
-              item-title="text"
-              item-value="value"
-              density="compact"
-              class="ma-2 flex-grow-1 is-flex"
-              :menu-props="{ offsetY: true }"
+              option-label="label"
+              option-value="value"
+              dense
+              class="q-ma-sm col-grow"
+              :menu-anchor="['bottom', 'start']"
           />
           <div
-              class="ma-2 flex-grow-1 is-flex"
+              class="q-ma-sm col-grow"
               v-for="filterInput of filterInputs"
               :key="filterInput.name"
           >
@@ -75,9 +74,8 @@
                     :modelField="filterInput"
                     v-model="filters[filterInput.name]"
                     :model="filterInput.meta.relatedModel"
-                    class="ma-2 flex-grow-1 is-flex"
-                    variant="outlined"
-                    density="compact"
+                    class="q-ma-sm col-grow"
+                    dense
                     :user="user"
                 />
               </template>
@@ -86,7 +84,7 @@
                     :key="filterInput.name"
                     :modelField="filterInput"
                     v-model="filters[filterInput.name].value"
-                    class="ma-2 flex-grow-1 is-flex"
+                    class="q-ma-sm col-grow"
                 />
               </template>
             </template>
@@ -96,17 +94,15 @@
                     :key="filterInput.name"
                     :filterField="filterInput"
                     v-model="filters"
-                    class="ma-2 flex-grow-1 is-flex"
+                    class="q-ma-sm col-grow"
                     :user="user"
                 />
               </template>
             </template>
-            <!--                    </div>-->
           </div>
         </div>
       </DestructableExpansionPanels>
-
-      <div class="my-4">
+      <div class="q-my-md">
         <template v-if="activeTab == 'table'">
           <SuperTableTable
               :items="items"
@@ -125,7 +121,7 @@
           />
         </template>
         <template v-if="activeTab == 'grid'">
-          <div class="my-4">
+          <div class="q-my-md">
             <SuperTableGrid
                 :items="items"
                 @clickRow="clickRow"
@@ -174,9 +170,8 @@
         </template>
       </div>
     </template>
-
     <template v-if="canEdit">
-      <v-dialog v-model="createItemData.showModal" max-width="800px">
+      <q-dialog v-model="createItemData.showModal" max-width="800px">
         <CreateEditForm
             title="Create Item"
             v-if="createItemData.showModal"
@@ -193,7 +188,7 @@
             user: user,
           }"
         />
-      </v-dialog>
+      </q-dialog>
     </template>
   </div>
 </template>
@@ -499,14 +494,6 @@ export default {
         };
       }
 
-      // options: {
-      //   "page": 1,
-      //       "itemsPerPage": 10,
-      //       "sortBy": [
-      //     "id"
-      //   ],
-      //       "groupBy": []
-      // },
       const response = await this.model.FetchAll(
           [],
           {
@@ -523,7 +510,6 @@ export default {
       );
 
       this.loading = false;
-      // let count = null
       let count = 0;
 
       if (this.model.adapator == "supabase") {
@@ -558,7 +544,6 @@ export default {
       }
     },
   },
-
   mounted() {
     if (this.quickListsIsMobile) {
       this.activeTab = "grid";
@@ -573,13 +558,8 @@ export default {
           modelField.usageType.startsWith("relForeignKey") ||
           modelField.dataType.startsWith("mapExtraRel")
       ) {
-        // this.$set(this.filters, modelField.name, null)
         this.filters[modelField.name] = null;
       } else if (modelField.usageType == "timeRangeStart") {
-        // this.$set(this.filters, modelField.name, {
-        //     value: null,
-        //     usageType: 'timeRangeStart',
-        // })
         this.filters[modelField.name] = {
           value: null,
           usageType: "timeRangeStart",

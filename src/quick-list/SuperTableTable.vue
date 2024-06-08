@@ -1,32 +1,27 @@
 <template>
   <div>
     <!--<pre>{{flattenedHeadersHideMapField}}</pre>-->
-    <v-data-table-server
-        :mobile-breakpoint="0"
-        @click:row="clickRow"
-        :headers="flattenedHeadersHideMapField"
-        :items="items"
-        :itemsLength="+itemsLength"
-        :page="optionsComputed.page"
-        :items-per-page="optionsComputed.itemsPerPage"
-        @update:options="
-        (e) => {
-          $emit('update:options', e);
-        }
-      "
-        v-model:sort-by="sortBy"
+    <q-table
+        :rows="items"
+        :columns="flattenedHeadersHideMapField"
+        row-key="id"
+        :rows-per-page-options="[10, 20, 30, 50, 100]"
+        :pagination.sync="pagination"
+        :loading="loading"
+        @row-click="clickRow"
+        @request="onRequest"
     >
       <template
-          v-for="(header, index) in flattenedHeaders"
-          v-slot:[`item.${header.key}`]="{ item }"
-          :key="index"
+          v-for="header in flattenedHeaders"
+          :key="header.key"
+          v-slot:[`body-cell-${header.key}`]="props"
       >
         <template v-if="header.isChildOf">
           <div>
             <FormattedColumn
                 :isTag="true"
                 :header="header"
-                :item="item[header.isChildOf.value]"
+                :item="props.row[header.isChildOf.value]"
                 :superOptions="superOptions"
             />
           </div>
@@ -35,13 +30,13 @@
           <div>
             <FormattedColumn
                 :header="header"
-                :item="item"
+                :item="props.row"
                 :superOptions="superOptions"
             />
           </div>
         </template>
       </template>
-    </v-data-table-server>
+    </q-table>
   </div>
 </template>
 
@@ -51,7 +46,6 @@ import FormattedColumn from "./FormattedColumn.vue";
 export default {
   name: "SuperTableTable",
   components: { FormattedColumn },
-
   props: {
     items: {
       type: Array,
@@ -88,6 +82,13 @@ export default {
   data() {
     return {
       sortBy: [],
+      loading: false,
+      pagination: {
+        page: 1,
+        rowsPerPage: 10,
+        sortBy: [],
+        descending: false,
+      },
     };
   },
   computed: {
@@ -136,7 +137,7 @@ export default {
   },
   methods: {
     updateOptions(e) {
-      this.$emit("updateOptions", e);
+      this.$emit("update:options", e);
     },
     deleteItem(e) {
       this.$emit("deleteItem", e);
@@ -144,11 +145,34 @@ export default {
     editItem(e) {
       this.$emit("editItem", e);
     },
-    clickRow(e, row) {
-      this.$emit("clickRow", row.item);
+    clickRow(props) {
+      this.$emit("clickRow", props.row);
+    },
+    onRequest(props) {
+      const { page, rowsPerPage, sortBy, descending } = props.pagination;
+      this.pagination = {
+        ...this.pagination,
+        page,
+        rowsPerPage,
+        sortBy,
+        descending,
+      };
+      this.$emit("update:options", { page, rowsPerPage, sortBy, descending });
     },
   },
   watch: {
+    options: {
+      handler(newOptions) {
+        this.pagination = {
+          ...this.pagination,
+          page: newOptions.page,
+          rowsPerPage: newOptions.itemsPerPage,
+          sortBy: newOptions.sortBy[0]?.key || this.pKey,
+          descending: newOptions.sortBy[0]?.order === "desc" || false,
+        };
+      },
+      deep: true,
+    },
     "editItemData.showModal"(arg) {
       if (!arg) {
         this.editItemData.data = {};
@@ -156,7 +180,7 @@ export default {
     },
   },
   mounted() {
-    this.sortBy = [{ key: this.pKey, order: "asc" }];
+    this.sortBy = [{key: this.pKey, order: "asc"}];
   },
 };
 </script>

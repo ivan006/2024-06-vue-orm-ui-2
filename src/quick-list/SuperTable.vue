@@ -57,7 +57,6 @@
               option-value="value"
               dense
               class="q-ma-sm col-grow"
-              :menu-anchor="['bottom', 'start']"
           />
           <div
               class="q-ma-sm col-grow"
@@ -110,14 +109,14 @@
               v-model:options="optionsComputed"
               :itemsLength="+itemsLength"
               :superOptions="{
-              headers: headers,
-              modelFields: modelFields,
-              displayMapField: displayMapField,
-              model: model,
-              canEdit: canEdit,
-              currentParentRel: currentParentRel,
-              user: user,
-            }"
+                headers: headers,
+                modelFields: modelFields,
+                displayMapField: displayMapField,
+                model: model,
+                canEdit: canEdit,
+                currentParentRel: currentParentRel,
+                user: user,
+              }"
           />
         </template>
         <template v-if="activeTab == 'grid'">
